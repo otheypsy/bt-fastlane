@@ -3,7 +3,7 @@ import { useGetAppState } from '../states/App/AppHooks'
 import { useSetAlert } from '../states/Alert/AlertHooks'
 import FastlaneIdentity from '../features/FastlaneIdentity'
 import FastlaneShippingAddress from '../features/FastlaneShippingAddress'
-import FastlanePaymentComponent from '../features/FastlanePaymentComponent'
+import FastlaneCardComponent from '../features/FastlaneCardComponent'
 import { chargeCreditCard } from '../services/ApiService'
 
 const guest = {
@@ -53,7 +53,7 @@ const styles = {
     branding: 'light',
 }
 
-const FastlaneComponentsCore = () => {
+const FastlaneFlexibleCore = () => {
     const appState = useGetAppState()
     const { success, warning, danger } = useSetAlert()
     const [fastlaneInstance, setFastlaneInstance] = useState(null)
@@ -65,7 +65,7 @@ const FastlaneComponentsCore = () => {
         let fastlane = undefined
         const initFastlane = async () => {
             try {
-                warning('Initializing FastlaneComponents...')
+                warning('Initializing FastlaneFlexibleCore...')
                 fastlane = await window.braintree.fastlane.create({
                     client: appState.clientInstance,
                     authorization: appState.clientInstance.getConfiguration().authorization,
@@ -73,7 +73,7 @@ const FastlaneComponentsCore = () => {
                     styles: styles,
                 })
                 fastlane.setLocale('en_us')
-                console.log('FastlaneComponents: initFastlane', fastlane)
+                console.log('FastlaneFlexibleCore: initFastlane', fastlane)
                 setFastlaneInstance(fastlane)
                 setCustomerState('unknown')
                 success('Ready!')
@@ -105,6 +105,14 @@ const FastlaneComponentsCore = () => {
         })
     }
 
+    const onPaymentMethodChange = async (card) => {
+        console.log('FastlaneComponents: onPaymentMethodChange', card)
+        setCustomer({
+            ...customer,
+            card,
+        })
+    }
+
     const createTransaction = async (card) => {
         const params = {
             amount: 100,
@@ -129,11 +137,12 @@ const FastlaneComponentsCore = () => {
                         shippingAddress={customer.shippingAddress}
                         onShippingAddressChange={onShippingAddressChange}
                     />
-                    <FastlanePaymentComponent
+                    <FastlaneCardComponent
                         customerState={customerState}
                         fastlane={fastlaneInstance}
                         profile={fastlaneInstance.profile}
                         customer={customer}
+                        onPaymentMethodChange={onPaymentMethodChange}
                         onTokenize={createTransaction}
                     />
                 </>
@@ -160,7 +169,7 @@ const FastlaneComponentsCore = () => {
     )
 }
 
-const FastlaneComponents = () => {
+const FastlaneFlexible = () => {
     const appState = useGetAppState()
     const { danger } = useSetAlert()
 
@@ -169,7 +178,7 @@ const FastlaneComponents = () => {
     }, [appState, danger])
 
     if (!appState?.clientInstance) return null
-    return <FastlaneComponentsCore />
+    return <FastlaneFlexibleCore />
 }
 
-export default FastlaneComponents
+export default FastlaneFlexible

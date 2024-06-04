@@ -22,13 +22,19 @@ const routes = [
     {
         label: 'ClientInstance',
         path: 'client-instance',
-        element: () => import('./pages/BTClientInstance'),
+        element: () => import('./pages/ClientInstance'),
         isDep: false,
     },
     {
-        label: 'Fastlane',
-        path: 'bt-fastlane',
-        element: () => import('./pages/BTFastlane'),
+        label: 'FL-Components',
+        path: 'bt-fastlane-components',
+        element: () => import('./pages/FastlaneComponents'),
+        isDep: true,
+    },
+    {
+        label: 'FL-Flexible',
+        path: 'bt-fastlane-flex',
+        element: () => import('./pages/FastlaneFlexible'),
         isDep: true,
     },
 ]

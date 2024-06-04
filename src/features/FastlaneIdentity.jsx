@@ -1,18 +1,8 @@
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
+import FastlaneWatermark from "./FastlaneWatermark";
 
 const FastlaneIdentity = (props) => {
-    const watermark = useRef(undefined)
     const [email, setEmail] = useState('odesai_connect@example.com')
-
-    useEffect(() => {
-        const initWatermark = async () => {
-            const fastlaneWatermark = await props?.fastlane
-                ?.FastlaneWatermarkComponent({ includeAdditionalInfo: true })
-                .render(watermark.current)
-            console.log('FastlaneIdentity: initWatermark', fastlaneWatermark)
-        }
-        props.fastlane && initWatermark()
-    }, [props.fastlane])
 
     const lookupCustomer = async () => {
         const response = await props?.fastlane?.identity.lookupCustomerByEmail(email)
@@ -39,7 +29,9 @@ const FastlaneIdentity = (props) => {
             <div className="form-floating mb-4">
                 <input type="text" className="form-control" value={email} onChange={onEmailChange} />
                 <label htmlFor="email">Email</label>
-                <div className="float-end m-1" style={{ minWidth: '250px' }} ref={watermark} id="watermarkContainer" />
+                <div className="float-end m-1">
+                    <FastlaneWatermark fastlane={props.fastlane} />
+                </div>
             </div>
             <button className="btn btn-outline-primary" onClick={runIdentity}>
                 Identify

@@ -3,13 +3,13 @@ import { useSetAppState } from '../states/App/AppHooks'
 import { useSetAlert } from '../states/Alert/AlertHooks'
 import { setup, createClientToken } from '../services/ApiService'
 
-const BTClientInstance = () => {
+const ClientInstance = () => {
     const setAppState = useSetAppState()
     const { success, warning, danger } = useSetAlert()
 
     const initialize = async (credentials) => {
         try {
-            warning('Initializing BTClientInstance...')
+            warning('Initializing ClientInstance...')
 
             // Setup GQL Client
             setup({
@@ -23,19 +23,19 @@ const BTClientInstance = () => {
                 merchantAccountId: credentials.merchantAccountId,
                 domains: ['example.com'],
             })
-            console.log('BTClientInstance: clientTokenResponse', tokenResponse)
+            console.log('ClientInstance: clientTokenResponse', tokenResponse)
 
             // Create Client Instance
             const clientInstance = await window.braintree.client.create({
                 authorization: tokenResponse.createClientToken.clientToken,
             })
-            console.log('BTClientInstance: clientInstance', clientInstance)
+            console.log('ClientInstance: clientInstance', clientInstance)
 
             const dcInstance = await window.braintree.dataCollector.create({
                 client: clientInstance,
             })
             const deviceData = dcInstance.deviceData
-            console.log('BTClientInstance: deviceData', deviceData)
+            console.log('ClientInstance: deviceData', deviceData)
 
             setAppState({
                 clientInstance,
@@ -52,4 +52,4 @@ const BTClientInstance = () => {
     return <CredentialsForm initialize={initialize} />
 }
 
-export default BTClientInstance
+export default ClientInstance

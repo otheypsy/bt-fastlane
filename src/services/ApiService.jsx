@@ -32,10 +32,10 @@ const createClientToken = (params) => {
     return client.request(query, variables)
 }
 
-const chargePaymentMethod = (params) => {
+const chargeCreditCard = (params) => {
     const query = `
-        mutation MyChargePaymentMethod($input: ChargePaymentMethodInput!) {
-            chargePaymentMethod(input: $input) {
+        mutation MyChargeCreditCard($input: ChargeCreditCardInput!) {
+            chargeCreditCard(input: $input) {
                 clientMutationId
                 transaction {
                     id
@@ -52,10 +52,15 @@ const chargePaymentMethod = (params) => {
         input: {
             clientMutationId: Date.now(),
             paymentMethodId: params.nonce,
+            options: {
+                billingAddress: params.billingAddress
+            },
             transaction: {
                 orderId: params.orderId,
                 amount: params.amount,
-                merchantAccountId: params.merchantAccountId,
+                shipping: {
+                    shippingAddress: params.shippingAddress
+                }
             },
         },
     }
@@ -84,4 +89,4 @@ const vaultPaymentMethod = (params) => {
     return client.request(query, variables)
 }
 
-export { setup, createClientToken, chargePaymentMethod, vaultPaymentMethod }
+export { setup, createClientToken, chargeCreditCard, vaultPaymentMethod }
