@@ -7,7 +7,10 @@ import FastlanePaymentMethod from '../features/FastlanePaymentMethod'
 import { chargePaymentMethod } from '../services/ApiService'
 
 const guest = {
-    name: 'Guest',
+    name: {
+        firstName: 'Guest',
+        lastName: 'Doe'
+    },
     shippingAddress: {
         company: undefined,
         firstName: 'John',
@@ -50,11 +53,10 @@ const styles = {
     branding: 'light',
 }
 
-const BTFastlaneCore = () => {
+const BTFastlaneComponentsCore = () => {
     const appState = useGetAppState()
     const { success, warning, danger } = useSetAlert()
     const [fastlaneInstance, setFastlaneInstance] = useState(null)
-    const [isIdentified, setIsIdentified] = useState(false)
     const [customer, setCustomer] = useState(guest)
     const [customerState, setCustomerState] = useState('unknown')
     const [output, setOutput] = useState({})
@@ -63,7 +65,7 @@ const BTFastlaneCore = () => {
         let fastlane = undefined
         const initConnect = async () => {
             try {
-                warning('Initializing BTFastlane...')
+                warning('Initializing BTFastlaneComponents...')
                 fastlane = await window.braintree.fastlane.create({
                     client: appState.clientInstance,
                     authorization: appState.clientInstance.getConfiguration().authorization,
@@ -71,9 +73,9 @@ const BTFastlaneCore = () => {
                     styles: styles,
                 })
                 fastlane.setLocale('en_us')
-                console.log('BTFastlane: initConnect', fastlane)
+                console.log('BTFastlaneComponents: initConnect', fastlane)
                 setFastlaneInstance(fastlane)
-                setIsIdentified(false)
+                setCustomerState('unknown')
                 success('Ready!')
             } catch (error) {
                 console.error(error)
@@ -89,53 +91,51 @@ const BTFastlaneCore = () => {
     }, [appState, success, warning, danger])
 
     const onIdentityResponse = (customer) => {
-        console.log('BTFastlane: onIdentityResponse', customer)
-        setCustomerState(() => (!customer ? 'guest' : 'recoginized'))
+        console.log('BTFastlaneComponents: onIdentityResponse', customer)
+        setCustomerState(() => (!customer ? 'guest' : 'recognized'))
         if (!customer) return undefined
         setCustomer(customer)
     }
 
-    const onPaymentMethodChange = async (card) => {
-        console.log('BTFastlane: onPaymentMethodChange', card)
-        setCustomer({
-            ...customer,
-            card,
-        })
-    }
-
     const onShippingAddressChange = (shippingAddress) => {
-        console.log('BTFastlane: onShippingAddressChange', shippingAddress)
+        console.log('BTFastlaneComponents: onShippingAddressChange', shippingAddress)
         setCustomer({
             ...customer,
             shippingAddress,
         })
     }
 
+    const onPaymentMethodChange = async (card) => {
+        console.log('BTFastlaneComponents: onPaymentMethodChange', card)
+        setCustomer({
+            ...customer,
+            card,
+        })
+    }
+
     const renderUXComponent = () => {
-        switch (customerState) {
-            case 'recoginized':
-                return <></>
-
-            case 'guest':
-                return (
-                    <>
-                        <label className="lead">Welcome, {customer.name}</label>
-                        <FastlaneShippingAddress
-                            profile={fastlaneInstance.profile}
-                            shippingAddress={customer.shippingAddress}
-                            onChangeShippingAddress={onShippingAddressChange}
-                        />
-                        <FastlanePaymentMethod
-                            profile={fastlaneInstance.profile}
-                            card={customer.card}
-                            onConnectCardResponse={onPaymentMethodChange}
-                        />
-                    </>
-                )
-
-            default:
-                return <FastlaneIdentity fastlane={fastlaneInstance} onConnectIdentityResponse={onIdentityResponse} />
-        }
+        return (customerState === 'recognized' || customerState === 'guest')
+        ?
+            (
+                <>
+                    <label className="lead mb-4">Welcome, {customer.name.firstName}</label>
+                    <FastlaneShippingAddress
+                        customerState={customerState}
+                        fastlane={fastlaneInstance}
+                        shippingAddress={customer.shippingAddress}
+                        onShippingAddressChange={onShippingAddressChange}
+                    />
+                    <FastlanePaymentMethod
+                        customerState={customerState}
+                        fastlane={fastlaneInstance}
+                        profile={fastlaneInstance.profile}
+                        customer={customer}
+                        onPaymentMethodChange={onPaymentMethodChange}
+                    />
+                </>
+            )
+        :
+            <FastlaneIdentity fastlane={fastlaneInstance} onConnectIdentityResponse={onIdentityResponse} />
     }
 
     return (
@@ -156,7 +156,7 @@ const BTFastlaneCore = () => {
     )
 }
 
-const BTFastlane = () => {
+const BTFastlaneComponents = () => {
     const appState = useGetAppState()
     const { danger } = useSetAlert()
 
@@ -165,7 +165,7 @@ const BTFastlane = () => {
     }, [appState, danger])
 
     if (!appState?.clientInstance) return null
-    return <BTFastlaneCore />
+    return <BTFastlaneComponentsCore />
 }
 
-export default BTFastlane
+export default BTFastlaneComponents
